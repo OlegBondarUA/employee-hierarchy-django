@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1>Employee Hierarchy</h1>
+    <ul>
+        {% for employee in root_employees %}
+            <li>{{ employee.full_name }} ({{ employee.position }})</li>
+            {% if employee.subordinates.all %}
+                <ul>
+                    {% for subordinate in employee.subordinates.all %}
+                        <li>{{ subordinate.full_name }} ({{ subordinate.position }})</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
