@@ -2,17 +2,49 @@
 {% block content %}
 <div class="container">
     <h1>Employee Hierarchy</h1>
-    <ul>
+    <ul id="employee-tree">
         {% for employee in root_employees %}
-            <li>{{ employee.full_name }} ({{ employee.position }})</li>
-            {% if employee.subordinates.all %}
-                <ul>
-                    {% for subordinate in employee.subordinates.all %}
-                        <li>{{ subordinate.full_name }} ({{ subordinate.position }})</li>
+            <li data-employee-id="{{ employee.id }}">
+                {{ employee.full_name }} ({{ employee.position }})
+                <ul class="subordinates">
+                    {% for subordinate in employee.subordinates.all|slice:":2" %}
+                        <li data-employee-id="{{ subordinate.id }}">
+                            {{ subordinate.full_name }} ({{ subordinate.position }})
+                            <ul class="subordinates"></ul>
+                            <button class="load-more" data-employee-id="{{ subordinate.id }}">Load more...</button>
+                        </li>
                     {% endfor %}
                 </ul>
-            {% endif %}
+            </li>
         {% endfor %}
     </ul>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#employee-tree').on('click', '.load-more', function() {
+        var loadMoreButton = $(this);
+        var employeeId = loadMoreButton.data('employee-id');
+
+        console.log('Employee ID:', employeeId);
+
+        if (employeeId !== undefined) {
+            $.ajax({
+                url: '/load_subordinates/' + employeeId + '/',
+                type: 'GET',
+                success: function(data) {
+                    loadMoreButton.parent().children('.subordinates').append(data.html);
+                    loadMoreButton.remove();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading subordinates:', error);
+                }
+            });
+        } else {
+            console.error('Employee ID is undefined.');
+        }
+    });
+});
+</script>
 {% endblock %}
