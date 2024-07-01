@@ -1,0 +1,10 @@
+{% for employee in page_obj %}
+    <tr>
+        <td>{{ employee.id }}</td>
+        <td>{{ employee.full_name }}</td>
+        <td>{{ employee.position }}</td>
+        <td>{{ employee.date_joined }}</td>
+        <td>{{ employee.email }}</td>
+        <td>{{ employee.manager_id }}</td>
+    </tr>
+{% endfor %}

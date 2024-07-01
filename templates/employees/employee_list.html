@@ -2,7 +2,29 @@
 {% block content %}
 <div class="container">
     <h1>Employee List</h1>
-    <table class="table table-striped">
+
+    <form id="employee-filter-form">
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <input type="text" class="form-control" id="search-input" placeholder="Search...">
+            </div>
+            <div class="form-group col-md-3">
+                <select class="form-control" id="sort-by-select">
+                    <option value="id">ID</option>
+                    <option value="full_name">Full Name</option>
+                    <option value="position">Position</option>
+                    <option value="date_joined">Date Joined</option>
+                    <option value="email">Email</option>
+                    <option value="manager_id">Manager ID</option>
+                </select>
+            </div>
+            <div class="form-group col-md-2">
+                <button type="submit" class="btn btn-primary">Apply</button>
+            </div>
+        </div>
+    </form>
+
+    <table id="employee-table" class="table table-striped">
         <thead>
             <tr>
                 <th><a href="?sort_by=id">ID</a></th>
@@ -53,4 +75,31 @@
         </ul>
     </nav>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#employee-filter-form').submit(function(event) {
+        event.preventDefault();
+
+        var searchQuery = $('#search-input').val().trim();
+        var sortBy = $('#sort-by-select').val();
+
+        $.ajax({
+            type: 'GET',
+            url: window.location.href,
+            data: {
+                'search': searchQuery,
+                'sort_by': sortBy
+            },
+            success: function(data) {
+                $('#employee-table tbody').html(data);
+            },
+            error: function() {
+                alert('Error loading employee data.');
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

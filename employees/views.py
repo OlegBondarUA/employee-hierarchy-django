@@ -27,10 +27,17 @@ def load_subordinates(request, employee_id):
 
 def employee_list(request):
     sort_by = request.GET.get('sort_by', 'id')
+    search_query = request.GET.get('search', '')
+
     employees = Employee.objects.all().order_by(sort_by)
+    if search_query:
+        employees = employees.filter(full_name__icontains=search_query)
 
     paginator = Paginator(employees, 50)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'employees/employee_list_ajax.html', {'page_obj': page_obj})
 
     return render(request, 'employees/employee_list.html', {'page_obj': page_obj, 'sort_by': sort_by})
