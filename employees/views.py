@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
+from django.core.paginator import Paginator
+
 from .models import Employee
 
 
@@ -21,3 +23,14 @@ def load_subordinates(request, employee_id):
         )
     }
     return JsonResponse(data)
+
+
+def employee_list(request):
+    sort_by = request.GET.get('sort_by', 'id')
+    employees = Employee.objects.all().order_by(sort_by)
+
+    paginator = Paginator(employees, 50)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'employees/employee_list.html', {'page_obj': page_obj, 'sort_by': sort_by})

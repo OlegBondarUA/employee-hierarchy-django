@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1>Employee List</h1>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th><a href="?sort_by=id">ID</a></th>
+                <th><a href="?sort_by=full_name">Full Name</a></th>
+                <th><a href="?sort_by=position">Position</a></th>
+                <th><a href="?sort_by=date_joined">Date Joined</a></th>
+                <th><a href="?sort_by=email">Email</a></th>
+                <th><a href="?sort_by=manager_id">Manager ID</a></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in page_obj %}
+                <tr>
+                    <td>{{ employee.id }}</td>
+                    <td>{{ employee.full_name }}</td>
+                    <td>{{ employee.position }}</td>
+                    <td>{{ employee.date_joined }}</td>
+                    <td>{{ employee.email }}</td>
+                    <td>{{ employee.manager_id }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <nav>
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?sort_by={{ sort_by }}&page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > page_obj.number|add:'-5' and num < page_obj.number|add:'5' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?sort_by={{ sort_by }}&page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?sort_by={{ sort_by }}&page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endblock %}
