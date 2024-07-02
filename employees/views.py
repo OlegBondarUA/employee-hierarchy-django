@@ -17,16 +17,32 @@ def employee_hierarchy(request):
 def load_subordinates(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
     subordinates = employee.subordinates.all()[:10]
-    data = {
-        'html': ''.join(
-            f'<li class="list-group-item" data-employee-id="{subordinate.id}">{subordinate.full_name} ({subordinate.position})'
-            f'<ul class="list-group list-group-flush ms-3 subordinates"></ul>'
-            f'<button class="btn btn-primary btn-sm load-more mt-2" data-employee-id="{subordinate.id}">Load more...</button>'
-            f'</li>'
-            for subordinate in subordinates
-        )
-    }
+
+    html = ''.join(
+        f'<li class="list-group-item" data-employee-id="{subordinate.id}">'
+        f'<div class="employee-header">'
+        f'<strong>{subordinate.full_name}</strong> ({subordinate.position})'
+        f'</div>'
+        f'<ul class="list-group list-group-flush ms-3 subordinates"></ul>'
+        f'<button class="btn btn-primary btn-sm load-more mt-2" data-employee-id="{subordinate.id}">Load more...</button>'
+        f'</li>'
+        for subordinate in subordinates
+    )
+
+    data = {'html': html}
     return JsonResponse(data)
+
+
+def reassign_employee(request, employee_id):
+    employee = get_object_or_404(Employee, id=employee_id)
+    new_manager_id = request.POST.get('new_manager_id')
+    if new_manager_id:
+        new_manager = get_object_or_404(Employee, id=new_manager_id)
+        employee.manager = new_manager
+        employee.save()
+        return JsonResponse({'message': 'Employee reassigned successfully'})
+    else:
+        return JsonResponse({'error': 'New manager ID not provided'}, status=400)
 
 
 @login_required
@@ -46,7 +62,6 @@ def employee_list(request):
         return render(request, 'employees/employee_list_ajax.html', {'page_obj': page_obj})
 
     return render(request, 'employees/employee_list.html', {'page_obj': page_obj, 'sort_by': sort_by})
-
 
 @login_required
 def employee_detail(request, pk):

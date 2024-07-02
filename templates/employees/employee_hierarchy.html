@@ -5,22 +5,28 @@
     <ul id="employee-tree" class="list-group">
         {% for employee in root_employees %}
             <li class="list-group-item" data-employee-id="{{ employee.id }}">
-                <strong>{{ employee.full_name }}</strong> ({{ employee.position }})
+                <div class="employee-header">
+                    <strong>{{ employee.full_name }}</strong> ({{ employee.position }})
+                </div>
                 <ul class="list-group list-group-flush ms-3 subordinates">
                     {% for subordinate in employee.subordinates.all|slice:":2" %}
                         <li class="list-group-item" data-employee-id="{{ subordinate.id }}">
-                            <strong>{{ subordinate.full_name }}</strong> ({{ subordinate.position }})
+                            <div class="employee-header">
+                                <strong>{{ subordinate.full_name }}</strong> ({{ subordinate.position }})
+                            </div>
                             <ul class="list-group list-group-flush ms-3 subordinates"></ul>
                             <button class="btn btn-primary btn-sm load-more mt-2" data-employee-id="{{ subordinate.id }}">Load more...</button>
                         </li>
                     {% endfor %}
                 </ul>
+                <button class="btn btn-primary btn-sm load-more mt-2" data-employee-id="{{ employee.id }}">Load more...</button>
             </li>
         {% endfor %}
     </ul>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
 <script>
 $(document).ready(function() {
     $('#employee-tree').on('click', '.load-more', function() {
@@ -36,6 +42,76 @@ $(document).ready(function() {
                 success: function(data) {
                     loadMoreButton.parent().children('.subordinates').append(data.html);
                     loadMoreButton.remove();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading subordinates:', error);
+                }
+            });
+        } else {
+            console.error('Employee ID is undefined.');
+        }
+    });
+
+    // Function to initialize draggable and droppable
+    function initializeDragDrop() {
+        $('.employee-header').draggable({
+            revert: 'invalid',
+            helper: 'clone',
+            zIndex: 100,
+            opacity: 0.7,
+        });
+
+        $('#employee-tree .list-group-item').droppable({
+            accept: '.employee-header',
+            drop: function(event, ui) {
+                var draggable = ui.draggable;
+                var draggedEmployeeId = draggable.parent().data('employee-id');
+                var droppedOn = $(this);
+                var newManagerId = droppedOn.data('employee-id');
+
+                if (draggedEmployeeId !== undefined && newManagerId !== undefined) {
+                    $.ajax({
+                        url: '/reassign_employee/' + draggedEmployeeId + '/',
+                        type: 'POST',
+                        data: {
+                            new_manager_id: newManagerId,
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                        },
+                        success: function(data) {
+                            console.log('Employee reassigned successfully');
+                            location.reload();
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error reassigning employee:', error);
+                        }
+                    });
+                } else {
+                    console.error('Employee ID or new manager ID is undefined.');
+                }
+            }
+        });
+    }
+
+    // Initial call to initialize draggable and droppable
+    initializeDragDrop();
+
+    // Load more button click event
+    $('#employee-tree').on('click', '.load-more', function() {
+        var loadMoreButton = $(this);
+        var employeeId = loadMoreButton.data('employee-id');
+
+        if (employeeId !== undefined) {
+            $.ajax({
+                url: '/load_subordinates/' + employeeId + '/',
+                type: 'GET',
+                success: function(data) {
+                    var subordinatesHtml = data.html;
+                    var subordinatesList = loadMoreButton.prev('.subordinates');
+                    subordinatesList.append(subordinatesHtml);
+                    loadMoreButton.remove();
+
+                    // Reinitialize draggable and droppable for newly added items
+                    initializeDragDrop();
                 },
                 error: function(xhr, status, error) {
                     console.error('Error loading subordinates:', error);
