@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Інформація про співробітника</h2>
+  <p><strong>ПІБ:</strong> {{ employee.full_name }}</p>
+  <p><strong>Посада:</strong> {{ employee.position }}</p>
+  <p><strong>Дата прийому:</strong> {{ employee.date_of_hire }}</p>
+  <p><strong>Email:</strong> {{ employee.email }}</p>
+  <p><strong>Начальник:</strong> {% if employee.supervisor %}{{ employee.supervisor.full_name }}{% else %}Немає{% endif %}</p>
+  <a href="{% url 'employee_update' employee.pk %}" class="btn btn-warning">Редагувати</a>
+  <form action="{% url 'employee_delete' employee.pk %}" method="post" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Видалити</button>
+  </form>
+{% endblock %}

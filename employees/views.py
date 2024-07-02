@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 
 from .forms import UserRegisterForm
 from .models import Employee
+from .forms import EmployeeForm
 
 
 def employee_hierarchy(request):
@@ -45,6 +46,46 @@ def employee_list(request):
         return render(request, 'employees/employee_list_ajax.html', {'page_obj': page_obj})
 
     return render(request, 'employees/employee_list.html', {'page_obj': page_obj, 'sort_by': sort_by})
+
+
+@login_required
+def employee_detail(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    return render(request, 'employees/employee_detail.html', {'employee': employee})
+
+@login_required
+def employee_create(request):
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Співробітника створено успішно.')
+            return redirect('employee_list')
+    else:
+        form = EmployeeForm()
+    return render(request, 'employees/employee_form.html', {'form': form})
+
+@login_required
+def employee_update(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, instance=employee)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Інформацію про співробітника оновлено успішно.')
+            return redirect('employee_list')
+    else:
+        form = EmployeeForm(instance=employee)
+    return render(request, 'employees/employee_form.html', {'form': form})
+
+@login_required
+def employee_delete(request, pk):
+    employee = get_object_or_404(Employee, pk=pk)
+    if request.method == 'POST':
+        employee.delete()
+        messages.success(request, 'Співробітника видалено успішно.')
+        return redirect('employee_list')
+    return render(request, 'employees/employee_confirm_delete.html', {'employee': employee})
 
 
 def register(request):

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>{{ form.instance.pk|yesno:"Редагувати співробітника,Створити співробітника" }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Зберегти</button>
+  </form>
+{% endblock %}

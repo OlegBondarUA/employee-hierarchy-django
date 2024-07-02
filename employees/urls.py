@@ -6,6 +6,10 @@ urlpatterns = [
     path('', views.employee_hierarchy, name='employee_hierarchy'),
     path('load_subordinates/<int:employee_id>/', views.load_subordinates, name='load_subordinates'),
     path('employee_list/', views.employee_list, name='employee_list'),
+    path('employee/<int:pk>/', views.employee_detail, name='employee_detail'),
+    path('employee/create/', views.employee_create, name='employee_create'),
+    path('employee/<int:pk>/update/', views.employee_update, name='employee_update'),
+    path('employee/<int:pk>/delete/', views.employee_delete, name='employee_delete'),
 
     path('register/', views.register, name='register'),
     path('login/', auth_views.LoginView.as_view(template_name='users/login.html'), name='login'),

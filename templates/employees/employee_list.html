@@ -1,105 +1,55 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
 {% block content %}
-<div class="container">
-    <h1>Employee List</h1>
-
-    <form id="employee-filter-form">
-        <div class="form-row">
-            <div class="form-group col-md-4">
-                <input type="text" class="form-control" id="search-input" placeholder="Search...">
-            </div>
-            <div class="form-group col-md-3">
-                <select class="form-control" id="sort-by-select">
-                    <option value="id">ID</option>
-                    <option value="full_name">Full Name</option>
-                    <option value="position">Position</option>
-                    <option value="date_joined">Date Joined</option>
-                    <option value="email">Email</option>
-                    <option value="manager_id">Manager ID</option>
-                </select>
-            </div>
-            <div class="form-group col-md-2">
-                <button type="submit" class="btn btn-primary">Apply</button>
-            </div>
-        </div>
-    </form>
-
-    <table id="employee-table" class="table table-striped">
-        <thead>
-            <tr>
-                <th><a href="?sort_by=id">ID</a></th>
-                <th><a href="?sort_by=full_name">Full Name</a></th>
-                <th><a href="?sort_by=position">Position</a></th>
-                <th><a href="?sort_by=date_joined">Date Joined</a></th>
-                <th><a href="?sort_by=email">Email</a></th>
-                <th><a href="?sort_by=manager_id">Manager ID</a></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for employee in page_obj %}
-                <tr>
-                    <td>{{ employee.id }}</td>
-                    <td>{{ employee.full_name }}</td>
-                    <td>{{ employee.position }}</td>
-                    <td>{{ employee.date_joined }}</td>
-                    <td>{{ employee.email }}</td>
-                    <td>{{ employee.manager_id }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <nav>
-        <ul class="pagination">
-            {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?sort_by={{ sort_by }}&page={{ page_obj.previous_page_number }}">Previous</a>
-                </li>
-            {% endif %}
-            {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                    <li class="page-item active">
-                        <span class="page-link">{{ num }}</span>
-                    </li>
-                {% elif num > page_obj.number|add:'-5' and num < page_obj.number|add:'5' %}
-                    <li class="page-item">
-                        <a class="page-link" href="?sort_by={{ sort_by }}&page={{ num }}">{{ num }}</a>
-                    </li>
-                {% endif %}
-            {% endfor %}
-            {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?sort_by={{ sort_by }}&page={{ page_obj.next_page_number }}">Next</a>
-                </li>
-            {% endif %}
-        </ul>
-    </nav>
-</div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-$(document).ready(function() {
-    $('#employee-filter-form').submit(function(event) {
-        event.preventDefault();
-
-        var searchQuery = $('#search-input').val().trim();
-        var sortBy = $('#sort-by-select').val();
-
-        $.ajax({
-            type: 'GET',
-            url: window.location.href,
-            data: {
-                'search': searchQuery,
-                'sort_by': sortBy
-            },
-            success: function(data) {
-                $('#employee-table tbody').html(data);
-            },
-            error: function() {
-                alert('Error loading employee data.');
-            }
-        });
-    });
-});
-</script>
+  <h2>Список співробітників</h2>
+  <form method="get" class="form-inline my-2 my-lg-0">
+    <input class="form-control mr-sm-2" type="search" placeholder="Пошук" aria-label="Пошук" name="search" value="{{ request.GET.search }}">
+    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Пошук</button>
+  </form>
+  <table class="table">
+    <thead>
+      <tr>
+        <th><a href="?sort_by=full_name">ПІБ</a></th>
+        <th><a href="?sort_by=position">Посада</a></th>
+        <th><a href="?sort_by=date_of_hire">Дата прийому</a></th>
+        <th><a href="?sort_by=email">Email</a></th>
+        <th><a href="?sort_by=manager">Менеджер</a></th>
+        <th>Дії</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for employee in page_obj %}
+      <tr>
+        <td>{{ employee.full_name }}</td>
+        <td>{{ employee.position }}</td>
+        <td>{{ employee.hire_date }}</td>
+        <td>{{ employee.email }}</td>
+        <td>{{ employee.manager }}</td>
+        <td>
+          <a href="{% url 'employee_detail' employee.pk %}" class="btn btn-info btn-sm">Перегляд</a>
+          <a href="{% url 'employee_update' employee.pk %}" class="btn btn-warning btn-sm">Редагувати</a>
+          <form action="{% url 'employee_delete' employee.pk %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">Видалити</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; початок</a>
+            <a href="?page={{ page_obj.previous_page_number }}">попередня</a>
+        {% endif %}
+        <span class="current">
+            Сторінка {{ page_obj.number }} з {{ page_obj.paginator.num_pages }}.
+        </span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">наступна</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">кінець &raquo;</a>
+        {% endif %}
+    </span>
+  </div>
 {% endblock %}
