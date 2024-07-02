@@ -52,7 +52,6 @@ $(document).ready(function() {
         }
     });
 
-    // Function to initialize draggable and droppable
     function initializeDragDrop() {
         $('.employee-header').draggable({
             revert: 'invalid',
@@ -92,10 +91,8 @@ $(document).ready(function() {
         });
     }
 
-    // Initial call to initialize draggable and droppable
     initializeDragDrop();
 
-    // Load more button click event
     $('#employee-tree').on('click', '.load-more', function() {
         var loadMoreButton = $(this);
         var employeeId = loadMoreButton.data('employee-id');
@@ -110,7 +107,6 @@ $(document).ready(function() {
                     subordinatesList.append(subordinatesHtml);
                     loadMoreButton.remove();
 
-                    // Reinitialize draggable and droppable for newly added items
                     initializeDragDrop();
                 },
                 error: function(xhr, status, error) {
