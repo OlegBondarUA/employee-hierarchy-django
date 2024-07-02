@@ -10,7 +10,7 @@ from .forms import EmployeeForm
 
 
 def employee_hierarchy(request):
-    root_employees = Employee.objects.filter(manager__isnull=True)[:10]
+    root_employees = Employee.objects.filter(manager__isnull=True)[:5]
     return render(request, 'employees/employee_hierarchy.html', {'root_employees': root_employees})
 
 
@@ -19,9 +19,9 @@ def load_subordinates(request, employee_id):
     subordinates = employee.subordinates.all()[:10]
     data = {
         'html': ''.join(
-            f'<li data-employee-id="{subordinate.id}">{subordinate.full_name} ({subordinate.position})'
-            f'<ul class="subordinates"></ul>'
-            f'<button class="load-more" data-employee-id="{subordinate.id}">Load more...</button>'
+            f'<li class="list-group-item" data-employee-id="{subordinate.id}">{subordinate.full_name} ({subordinate.position})'
+            f'<ul class="list-group list-group-flush ms-3 subordinates"></ul>'
+            f'<button class="btn btn-primary btn-sm load-more mt-2" data-employee-id="{subordinate.id}">Load more...</button>'
             f'</li>'
             for subordinate in subordinates
         )

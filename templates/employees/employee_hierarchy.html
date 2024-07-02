@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
-    <h1>Employee Hierarchy</h1>
-    <ul id="employee-tree">
+<div class="container mt-5">
+    <h1 class="mb-4">Employee Hierarchy</h1>
+    <ul id="employee-tree" class="list-group">
         {% for employee in root_employees %}
-            <li data-employee-id="{{ employee.id }}">
-                {{ employee.full_name }} ({{ employee.position }})
-                <ul class="subordinates">
+            <li class="list-group-item" data-employee-id="{{ employee.id }}">
+                <strong>{{ employee.full_name }}</strong> ({{ employee.position }})
+                <ul class="list-group list-group-flush ms-3 subordinates">
                     {% for subordinate in employee.subordinates.all|slice:":2" %}
-                        <li data-employee-id="{{ subordinate.id }}">
-                            {{ subordinate.full_name }} ({{ subordinate.position }})
-                            <ul class="subordinates"></ul>
-                            <button class="load-more" data-employee-id="{{ subordinate.id }}">Load more...</button>
+                        <li class="list-group-item" data-employee-id="{{ subordinate.id }}">
+                            <strong>{{ subordinate.full_name }}</strong> ({{ subordinate.position }})
+                            <ul class="list-group list-group-flush ms-3 subordinates"></ul>
+                            <button class="btn btn-primary btn-sm load-more mt-2" data-employee-id="{{ subordinate.id }}">Load more...</button>
                         </li>
                     {% endfor %}
                 </ul>
