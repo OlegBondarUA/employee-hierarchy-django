@@ -1,7 +1,10 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.core.paginator import Paginator
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
+from .forms import UserRegisterForm
 from .models import Employee
 
 
@@ -25,6 +28,7 @@ def load_subordinates(request, employee_id):
     return JsonResponse(data)
 
 
+@login_required
 def employee_list(request):
     sort_by = request.GET.get('sort_by', 'id')
     search_query = request.GET.get('search', '')
@@ -41,3 +45,20 @@ def employee_list(request):
         return render(request, 'employees/employee_list_ajax.html', {'page_obj': page_obj})
 
     return render(request, 'employees/employee_list.html', {'page_obj': page_obj, 'sort_by': sort_by})
+
+
+def register(request):
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            messages.success(request, f'Ваш акаунт створено! Тепер ви можете увійти.')
+            return redirect('login')
+    else:
+        form = UserRegisterForm()
+    return render(request, 'users/register.html', {'form': form})
+
+
+def login_success(request):
+    return render(request, 'users/login_success.html')
