@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.core.paginator import Paginator
@@ -47,12 +48,18 @@ def reassign_employee(request, employee_id):
 
 @login_required
 def employee_list(request):
-    sort_by = request.GET.get('sort_by', 'id')
+    sort_by = request.GET.get('sort_by', 'full_name')
     search_query = request.GET.get('search', '')
 
     employees = Employee.objects.all().order_by(sort_by)
+
     if search_query:
-        employees = employees.filter(full_name__icontains=search_query)
+        employees = employees.filter(
+            Q(full_name=search_query) |
+            Q(position__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(manager__full_name=search_query)
+        ).order_by(sort_by)
 
     paginator = Paginator(employees, 50)
     page_number = request.GET.get('page')
@@ -62,6 +69,7 @@ def employee_list(request):
         return render(request, 'employees/employee_list_ajax.html', {'page_obj': page_obj})
 
     return render(request, 'employees/employee_list.html', {'page_obj': page_obj, 'sort_by': sort_by})
+
 
 @login_required
 def employee_detail(request, pk):
