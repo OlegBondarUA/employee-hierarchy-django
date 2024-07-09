@@ -25,33 +25,17 @@
     </ul>
 </div>
 
+<style>
+    .droppable-hover {
+        background-color: #f0f0f0;
+        border: 2px dashed #007bff;
+    }
+</style>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
 <script>
 $(document).ready(function() {
-    $('#employee-tree').on('click', '.load-more', function() {
-        var loadMoreButton = $(this);
-        var employeeId = loadMoreButton.data('employee-id');
-
-        console.log('Employee ID:', employeeId);
-
-        if (employeeId !== undefined) {
-            $.ajax({
-                url: '/load_subordinates/' + employeeId + '/',
-                type: 'GET',
-                success: function(data) {
-                    loadMoreButton.parent().children('.subordinates').append(data.html);
-                    loadMoreButton.remove();
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error loading subordinates:', error);
-                }
-            });
-        } else {
-            console.error('Employee ID is undefined.');
-        }
-    });
-
     function initializeDragDrop() {
         $('.employee-header').draggable({
             revert: 'invalid',
@@ -62,7 +46,15 @@ $(document).ready(function() {
 
         $('#employee-tree .list-group-item').droppable({
             accept: '.employee-header',
+            over: function(event, ui) {
+                $(this).addClass('droppable-hover');
+            },
+            out: function(event, ui) {
+                $(this).removeClass('droppable-hover');
+            },
             drop: function(event, ui) {
+                $(this).removeClass('droppable-hover');
+
                 var draggable = ui.draggable;
                 var draggedEmployeeId = draggable.parent().data('employee-id');
                 var droppedOn = $(this);

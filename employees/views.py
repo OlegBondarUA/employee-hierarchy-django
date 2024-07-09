@@ -11,7 +11,7 @@ from .forms import EmployeeForm
 
 
 def employee_hierarchy(request):
-    root_employees = Employee.objects.filter(manager__isnull=True)[:5]
+    root_employees = Employee.objects.all()[:5]
     return render(request, 'employees/employee_hierarchy.html', {'root_employees': root_employees})
 
 
