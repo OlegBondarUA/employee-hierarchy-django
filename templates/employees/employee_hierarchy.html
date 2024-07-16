@@ -1,114 +1,114 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-5">
-    <h1 class="mb-4">Employee Hierarchy</h1>
-    <ul id="employee-tree" class="list-group">
-        {% for employee in root_employees %}
-            <li class="list-group-item" data-employee-id="{{ employee.id }}">
-                <div class="employee-header">
-                    <strong>{{ employee.full_name }}</strong> ({{ employee.position }})
-                </div>
-                <ul class="list-group list-group-flush ms-3 subordinates">
-                    {% for subordinate in employee.subordinates.all|slice:":2" %}
-                        <li class="list-group-item" data-employee-id="{{ subordinate.id }}">
-                            <div class="employee-header">
-                                <strong>{{ subordinate.full_name }}</strong> ({{ subordinate.position }})
-                            </div>
-                            <ul class="list-group list-group-flush ms-3 subordinates"></ul>
-                            <button class="btn btn-primary btn-sm load-more mt-2" data-employee-id="{{ subordinate.id }}">Load more...</button>
-                        </li>
-                    {% endfor %}
-                </ul>
-                <button class="btn btn-primary btn-sm load-more mt-2" data-employee-id="{{ employee.id }}">Load more...</button>
+  <h1 class="mb-4">Employee Hierarchy</h1>
+  <ul id="employee-tree" class="list-group">
+    {% for employee in root_employees %}
+      <li class="list-group-item" data-employee-id="{{ employee.id }}">
+        <div class="employee-header">
+          <strong>{{ employee.full_name }}</strong> ({{ employee.position }})
+        </div>
+        <ul class="list-group list-group-flush ms-3 subordinates">
+          {% for subordinate in employee.subordinates.all|slice:":2" %}
+            <li class="list-group-item" data-employee-id="{{ subordinate.id }}">
+              <div class="employee-header">
+                <strong>{{ subordinate.full_name }}</strong> ({{ subordinate.position }})
+              </div>
+              <ul class="list-group list-group-flush ms-3 subordinates"></ul>
+              <button class="btn btn-primary btn-sm load-more mt-2" data-employee-id="{{ subordinate.id }}">Load more...</button>
             </li>
-        {% endfor %}
-    </ul>
+          {% endfor %}
+        </ul>
+        <button class="btn btn-primary btn-sm load-more mt-2" data-employee-id="{{ employee.id }}">Load more...</button>
+      </li>
+    {% endfor %}
+  </ul>
 </div>
 
 <style>
-    .droppable-hover {
-        background-color: #f0f0f0;
-        border: 2px dashed #007bff;
-    }
+  .droppable-hover {
+    background-color: #f0f0f0;
+    border: 2px dashed #007bff;
+  }
 </style>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
 <script>
 $(document).ready(function() {
-    function initializeDragDrop() {
-        $('.employee-header').draggable({
-            revert: 'invalid',
-            helper: 'clone',
-            zIndex: 100,
-            opacity: 0.7,
-        });
-
-        $('#employee-tree .list-group-item').droppable({
-            accept: '.employee-header',
-            over: function(event, ui) {
-                $(this).addClass('droppable-hover');
-            },
-            out: function(event, ui) {
-                $(this).removeClass('droppable-hover');
-            },
-            drop: function(event, ui) {
-                $(this).removeClass('droppable-hover');
-
-                var draggable = ui.draggable;
-                var draggedEmployeeId = draggable.parent().data('employee-id');
-                var droppedOn = $(this);
-                var newManagerId = droppedOn.data('employee-id');
-
-                if (draggedEmployeeId !== undefined && newManagerId !== undefined) {
-                    $.ajax({
-                        url: '/reassign_employee/' + draggedEmployeeId + '/',
-                        type: 'POST',
-                        data: {
-                            new_manager_id: newManagerId,
-                            csrfmiddlewaretoken: '{{ csrf_token }}',
-                        },
-                        success: function(data) {
-                            console.log('Employee reassigned successfully');
-                            location.reload();
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('Error reassigning employee:', error);
-                        }
-                    });
-                } else {
-                    console.error('Employee ID or new manager ID is undefined.');
-                }
-            }
-        });
-    }
-
-    initializeDragDrop();
-
-    $('#employee-tree').on('click', '.load-more', function() {
-        var loadMoreButton = $(this);
-        var employeeId = loadMoreButton.data('employee-id');
-
-        if (employeeId !== undefined) {
-            $.ajax({
-                url: '/load_subordinates/' + employeeId + '/',
-                type: 'GET',
-                success: function(data) {
-                    var subordinatesHtml = data.html;
-                    var subordinatesList = loadMoreButton.prev('.subordinates');
-                    subordinatesList.append(subordinatesHtml);
-                    loadMoreButton.remove();
-
-                    initializeDragDrop();
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error loading subordinates:', error);
-                }
-            });
-        } else {
-            console.error('Employee ID is undefined.');
-        }
+  function initializeDragDrop() {
+    $('.employee-header').draggable({
+      revert: 'invalid',
+      helper: 'clone',
+      zIndex: 100,
+      opacity: 0.7,
     });
+
+    $('#employee-tree .list-group-item').droppable({
+      accept: '.employee-header',
+      over: function(event, ui) {
+        $(this).addClass('droppable-hover');
+      },
+      out: function(event, ui) {
+        $(this).removeClass('droppable-hover');
+      },
+      drop: function(event, ui) {
+        $(this).removeClass('droppable-hover');
+
+        var draggable = ui.draggable;
+        var draggedEmployeeId = draggable.parent().data('employee-id');
+        var droppedOn = $(this);
+        var newManagerId = droppedOn.data('employee-id');
+
+        if (draggedEmployeeId !== undefined && newManagerId !== undefined) {
+          $.ajax({
+            url: `/reassign_employee/${draggedEmployeeId}/`,
+            type: 'POST',
+            data: {
+              new_manager_id: newManagerId,
+              csrfmiddlewaretoken: '{{ csrf_token }}',
+            },
+            success: function(data) {
+              console.log('Employee reassigned successfully');
+              location.reload();
+            },
+            error: function(xhr, status, error) {
+              console.error('Error reassigning employee:', error);
+            }
+          });
+        } else {
+          console.error('Employee ID or new manager ID is undefined.');
+        }
+      }
+    });
+  }
+
+  initializeDragDrop();
+
+  $('#employee-tree').on('click', '.load-more', function() {
+    var loadMoreButton = $(this);
+    var employeeId = loadMoreButton.data('employee-id');
+
+    if (employeeId !== undefined) {
+      $.ajax({
+        url: `/load_subordinates/${employeeId}/`,
+        type: 'GET',
+        success: function(data) {
+          var subordinatesHtml = data.html;
+          var subordinatesList = loadMoreButton.prev('.subordinates');
+          subordinatesList.append(subordinatesHtml);
+          loadMoreButton.remove();
+
+          initializeDragDrop();
+        },
+        error: function(xhr, status, error) {
+          console.error('Error loading subordinates:', error);
+        }
+      });
+    } else {
+      console.error('Employee ID is undefined.');
+    }
+  });
 });
 </script>
 {% endblock %}
